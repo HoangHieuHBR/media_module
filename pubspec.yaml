@@ -22,6 +22,9 @@ dev_dependencies:
 
   flutter_lints: ^4.0.0
 
+dependency_overrides:
+  video_player_android: 2.7.1
+
 
 flutter:
   uses-material-design: true

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
+import 'preview_video_screen.dart';
+
 class VideoRecordView extends StatefulWidget {
   const VideoRecordView({super.key});
 
@@ -305,10 +307,24 @@ class _VideoRecordViewState extends State<VideoRecordView> {
       if (mounted) {
         setState(() {});
       }
-      if (file != null) {
-        _showInSnackBar('Video recorded to ${file.path}');
-        videoFile = file;
+      if (mounted && file != null) {
+        // _showInSnackBar('Video recorded to ${file.path}');
+        // videoFile = file;
         // _startVideoPlayer();
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (ctx) {
+              return PreviewVideoScreen(
+                videoFile: file,
+                onPopPreviousScreen: (file) {
+                  Navigator.pop(context, file);
+                },
+              );
+            },
+          ),
+        );
       }
     });
   }
@@ -619,6 +635,14 @@ class _VideoRecordViewState extends State<VideoRecordView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
+        leading: IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.keyboard_arrow_down),
+          color: Colors.white,
+          iconSize: 30,
+        ),
         elevation: 0,
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -637,27 +661,9 @@ class _VideoRecordViewState extends State<VideoRecordView> {
                 height: MediaQuery.sizeOf(context).height * 0.8,
                 width: MediaQuery.sizeOf(context).width,
                 child: Stack(
-                  children: <Widget>[
+                  children: [
                     Positioned.fill(
                       child: buildCameraPreviewWidget(),
-                    ),
-                    Positioned(
-                      top: 40,
-                      left: 20,
-                      child: GestureDetector(
-                        onTap: () {
-                          print("Tapped");
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          child: const Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                      ),
                     ),
                     Positioned(
                       bottom: 30,
