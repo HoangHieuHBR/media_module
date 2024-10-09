@@ -335,7 +335,6 @@ class _VideoRecordViewState extends State<VideoRecordView> {
       if (mounted) {
         setState(() {});
       }
-      _showInSnackBar('Video recording paused');
     });
   }
 
@@ -345,7 +344,6 @@ class _VideoRecordViewState extends State<VideoRecordView> {
       if (mounted) {
         setState(() {});
       }
-      _showInSnackBar('Video recording resumed');
     });
   }
 

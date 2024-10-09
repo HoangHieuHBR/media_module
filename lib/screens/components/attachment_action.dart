@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:media_module/config/config.dart';
 
@@ -20,12 +21,17 @@ class AttachmentAction extends StatefulWidget {
 }
 
 class _AttachmentActionState extends State<AttachmentAction> {
-  void _openRecordVideo() {
-    Navigator.of(context).push(
+  void _openRecordVideo() async {
+    var result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const VideoRecordView(),
       ),
     );
+
+    if (result != null && result is XFile) {
+      var file = File(result.path);
+      widget.onFileAttached([file]);
+    }
   }
 
   Widget buildRecordAction() {

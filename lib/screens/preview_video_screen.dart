@@ -23,6 +23,7 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
   VoidCallback? videoPlayerListener;
 
   bool isShowVideoControl = true;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -276,7 +277,7 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
           const Spacer(),
           ElevatedButton(
             onPressed: () {
-           
+              Navigator.pop(context);
               widget.onPopPreviousScreen(videoFile);
             },
             style: ElevatedButton.styleFrom(
@@ -331,7 +332,9 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: buildVideoPlayView(),
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : buildVideoPlayView(),
                   ),
                   Positioned(
                     bottom: 0,
