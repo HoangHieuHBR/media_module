@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:media_module/widgets/custom_dialog.dart';
 import 'package:video_player/video_player.dart';
 
 class PreviewVideoScreen extends StatefulWidget {
@@ -62,8 +63,8 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
     await videoController?.dispose();
     if (mounted) {
       setState(() {
-        // imageFile = null;
         videoController = vController;
+        isLoading = false;
       });
     }
     await vController.play();
@@ -78,60 +79,26 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
   }
 
   void _showDiscardDialog() {
+    print("run open dialog");
     showDialog(
       context: context,
       builder: (ctx) {
-        return Container(
-          width: MediaQuery.sizeOf(ctx).width * 0.7,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            children: [
-              Text(
-                'Discard Media',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 20),
-              Flexible(
-                child: Text(
-                  'If you do this action now, you will lose any changes you\'ve made',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  maxLines: 2,
+        return CustomDialog(
+          titleWidget: Text(
+            'Discard Media',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-              ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text(
-                      'Cancel',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.red,
-                          ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Discard',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.green,
-                          ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
+          contentWidget: Text(
+            'If you do this action now, you will lose any changes you\'ve made',
+            style: Theme.of(context).textTheme.bodyMedium,
+            maxLines: 2,
+          ),
+          onSaveTitle: 'Discard',
+          onSave: () {
+            widget.onPopPreviousScreen(null);
+          },
         );
       },
     );
@@ -259,10 +226,7 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
           ),
           const SizedBox(width: 20),
           TextButton.icon(
-            onPressed: () {
-              _showDiscardDialog();
-              widget.onPopPreviousScreen(null);
-            },
+            onPressed: _showDiscardDialog,
             label: Text(
               'Retry',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -309,10 +273,7 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
         leading: IconButton(
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
-          onPressed: () {
-            _showDiscardDialog();
-            widget.onPopPreviousScreen(null);
-          },
+          onPressed: _showDiscardDialog,
           icon: const Icon(Icons.keyboard_arrow_down),
           color: Colors.white,
           iconSize: 30,

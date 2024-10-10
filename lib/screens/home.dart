@@ -4,12 +4,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../utils/file_util.dart';
 import '../widgets/widgets.dart';
 import 'components/attachment_action.dart';
+import 'media_gallery_view.dart';
 
 class ThumbnailRequest {
   final String video;
@@ -43,6 +45,16 @@ class ThumbnailResult {
       required this.width});
 }
 
+class AttachmentItem {
+  final String attachmentId;
+  final File file;
+
+  const AttachmentItem({
+    required this.attachmentId,
+    required this.file,
+  });
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -51,12 +63,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<File?> _attachFiles = [];
+  List<AttachmentItem> _attachFiles = [];
 
   final ImageFormat _format = ImageFormat.JPEG;
-  final int _timeMs = 0;
 
   String? _tempDir;
+
+  final Uuid uuid = const Uuid();
 
   @override
   void initState() {
@@ -73,9 +86,16 @@ class _HomePageState extends State<HomePage> {
         return CustomBottomSheet(
           bottomSheetHeight: 0.4 * MediaQuery.sizeOf(context).height,
           bottomSheetBody: AttachmentAction(
-            attachFileList: _attachFiles,
+            attachFileList: _attachFiles.map((e) => e.file).toList(),
             onFileAttached: (selectedFiles) {
-              _attachFiles = [..._attachFiles, ...selectedFiles];
+              for (var attachFile in selectedFiles) {
+                var newAttachment = AttachmentItem(
+                  attachmentId: uuid.v4(),
+                  file: attachFile!,
+                );
+
+                _attachFiles = [..._attachFiles, newAttachment];
+              }
               setState(() {});
             },
           ),
@@ -109,8 +129,6 @@ class _HomePageState extends State<HomePage> {
       quality: r.quality,
     );
 
-   
-
     final file = File(thumbnailPath!);
     Uint8List bytes = file.readAsBytesSync();
 
@@ -122,7 +140,7 @@ class _HomePageState extends State<HomePage> {
       height: r.maxHeight.toDouble(),
       width: r.maxWidth.toDouble(),
     );
-    
+
     image.image
         .resolve(const ImageConfiguration())
         .addListener(ImageStreamListener((ImageInfo info, bool _) {
@@ -130,13 +148,25 @@ class _HomePageState extends State<HomePage> {
         image: image,
         dataSize: imageDataSize,
         height: info.image.height,
-        width: info.image.width,
+        width: (MediaQuery.sizeOf(context).width * 0.8).toInt(),
       ));
-       print("Video height: ${r.maxHeight}");
-    print("Video width: ${r.maxWidth}");
     }));
 
     return completer.future;
+  }
+
+  void _navigateToMediaGalleryView(AttachmentItem attachment) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) {
+          return MediaGalleryView(
+            selectAttachment: attachment,
+            attachments: [..._attachFiles],
+          );
+        },
+      ),
+    );
   }
 
   Widget buildAttachmentList() {
@@ -155,8 +185,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget attachmentItem(File? attachment) {
-    FileItemType fileType = FileUtil.mapFileType(attachment?.path ?? '');
+  Widget attachmentItem(AttachmentItem attachment) {
+    FileItemType fileType = FileUtil.mapFileType(attachment.file.path);
 
     switch (fileType) {
       case FileItemType.video:
@@ -167,80 +197,95 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget videoAttachmentItem(File? attachment) {
-    VideoPlayerController controller = VideoPlayerController.file(attachment!);
+  Widget videoAttachmentItem(AttachmentItem attachment) {
+    VideoPlayerController controller =
+        VideoPlayerController.file(attachment.file);
 
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.3,
-      width: MediaQuery.sizeOf(context).width * 0.8,
-      child: Stack(
-        children: [
-          Container(
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Theme.of(context).dividerColor,
-                width: 0.5,
-              ),
-            ),
-            child: FutureBuilder<ThumbnailResult>(
-              future: _buildVideoThumbnail(
-                ThumbnailRequest(
-                  video: attachment.path,
-                  thumbnailPath: _tempDir,
-                  imageFormat: _format,
-                  maxHeight: (MediaQuery.sizeOf(context).width * 0.3).toInt(),
-                  maxWidth: (MediaQuery.sizeOf(context).width * 0.8).toInt(),
-                  timeMs: _timeMs,
-                  quality: 50,
+    return InkWell(
+      onTap: () => _navigateToMediaGalleryView(attachment),
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.3,
+        width: MediaQuery.sizeOf(context).width * 0.8,
+        child: Stack(
+          children: [
+            Container(
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor,
+                  width: 0.5,
                 ),
               ),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final image = snapshot.data!.image;
-                  return image;
-                }
-                return Center(
-                  child: Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.medium,
+              child: FutureBuilder<ThumbnailResult>(
+                future: _buildVideoThumbnail(
+                  ThumbnailRequest(
+                    video: attachment.file.path,
+                    thumbnailPath: _tempDir,
+                    imageFormat: _format,
+                    maxHeight: 0,
+                    maxWidth: 0,
+                    timeMs: 0,
+                    quality: 50,
                   ),
-                );
-              },
-            ),
-          ),
-          Positioned(
-            bottom: 5,
-            left: 5,
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.play_arrow_rounded,
-                    size: 20,
-                    color: Colors.white,
-                  ),
-                  Text(
-                    _videoDuration(controller.value.duration),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white,
+                ),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final image = snapshot.data!.image;
+                    final imageHeight = snapshot.data!.height.toDouble();
+                    final imageWidth = snapshot.data!.width.toDouble();
+
+                    return SizedBox(
+                      height: imageHeight,
+                      width: imageWidth,
+                      child: image,
+                    );
+                  } else {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.network(
+                          'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png',
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.medium,
                         ),
-                  ),
-                ],
+                      ],
+                    );
+                  }
+                },
               ),
             ),
-          ),
-        ],
+            Positioned(
+              bottom: 5,
+              left: 5,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      _videoDuration(controller.value.duration),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

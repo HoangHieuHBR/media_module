@@ -17,6 +17,8 @@ dependencies:
   # camera: ^0.11.0+2
   camera: 0.10.6
   path_provider: ^2.1.4
+  floating: ^4.0.1
+  uuid: ^4.5.1
 
   video_thumbnail:
     path: ../video_thumbnail
