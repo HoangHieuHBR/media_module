@@ -24,7 +24,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   late VideoPlayerController _controller;
   late Timer _inactiveTimer;
   bool _isUserActive = true;
-  bool _showVideoControlView = false;
+  bool _showVideoControlView = true;
 
   String playbackSpeed = '1X';
 
