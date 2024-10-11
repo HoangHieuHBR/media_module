@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:media_module/utils/floating_util.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
@@ -64,12 +65,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<AttachmentItem> _attachFiles = [];
+  AttachmentItem? _selectedAttachment;
 
   final ImageFormat _format = ImageFormat.JPEG;
 
   String? _tempDir;
 
   final Uuid uuid = const Uuid();
+
+  bool alreadyAddedOverlays = false;
 
   @override
   void initState() {
@@ -155,20 +159,6 @@ class _HomePageState extends State<HomePage> {
     return completer.future;
   }
 
-  void _navigateToMediaGalleryView(AttachmentItem attachment) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (ctx) {
-          return MediaGalleryView(
-            selectAttachment: attachment,
-            attachments: [..._attachFiles],
-          );
-        },
-      ),
-    );
-  }
-
   Widget buildAttachmentList() {
     return Padding(
       padding: const EdgeInsets.all(10),
@@ -202,7 +192,12 @@ class _HomePageState extends State<HomePage> {
         VideoPlayerController.file(attachment.file);
 
     return InkWell(
-      onTap: () => _navigateToMediaGalleryView(attachment),
+      onTap: () {
+        setState(() {
+          _selectedAttachment = attachment;
+        });
+        FloatingUtil.showFull();
+      },
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.3,
         width: MediaQuery.sizeOf(context).width * 0.8,
@@ -261,28 +256,63 @@ class _HomePageState extends State<HomePage> {
             Positioned(
               bottom: 5,
               left: 5,
-              child: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.play_arrow_rounded,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                    Text(
-                      _videoDuration(controller.value.duration),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
+              child: FutureBuilder(
+                  future: controller.initialize(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.play_arrow_rounded,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              _videoDuration(controller.value.duration),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.play_arrow_rounded,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              '0:00',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  }),
             ),
           ],
         ),
@@ -292,19 +322,38 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Home screen'),
-      ),
-      body: buildAttachmentList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAttachmentBottomSheet();
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
+    return LayoutBuilder(builder: (layoutContext, constraints) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (alreadyAddedOverlays || _selectedAttachment == null) {
+          return;
+        }
+
+        Overlay.of(layoutContext).insert(
+          OverlayEntry(
+            builder: (context) => MediaGalleryView(
+              selectAttachment: _selectedAttachment!,
+              attachments: [..._attachFiles],
+            ),
+          ),
+        );
+
+        alreadyAddedOverlays = true;
+      });
+
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: const Text('Home screen'),
+        ),
+        body: buildAttachmentList(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showAttachmentBottomSheet();
+          },
+          tooltip: 'Increment',
+          child: const Icon(Icons.add),
+        ),
+      );
+    });
   }
 }
