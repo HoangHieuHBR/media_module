@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:pip_view/pip_view.dart';
 
+enum FloatingState { full, minimized, closed }
+
 class FloatingUtil {
   static final FloatingUtil _instance = FloatingUtil._internal();
 
@@ -8,24 +10,26 @@ class FloatingUtil {
     return _instance;
   }
 
-  static final ValueNotifier<bool> _isFloatingShown = ValueNotifier(false);
+  static final ValueNotifier<FloatingState> _floatingState =
+      ValueNotifier(FloatingState.closed);
 
-  static bool get isShown => _isFloatingShown.value;
+  static FloatingState get state => _floatingState.value;
 
   static void showFull() {
-    _isFloatingShown.value = true;
+    _floatingState.value = FloatingState.full;
   }
 
   static void minimize(BuildContext context) {
     PIPView.of(context)?.present();
+    _floatingState.value = FloatingState.minimized;
   }
 
   static void close() {
-    _isFloatingShown.value = false;
+    _floatingState.value = FloatingState.closed;
   }
 
   static void listen(VoidCallback callback) {
-    _isFloatingShown.addListener(callback);
+    _floatingState.addListener(callback);
   }
 
   FloatingUtil._internal();

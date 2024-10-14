@@ -24,7 +24,7 @@ class MediaGalleryView extends StatefulWidget {
 
 class _MediaGalleryViewState extends State<MediaGalleryView> {
   late VideoPlayerController _controller;
-  late Timer _inactiveTimer;
+  Timer? _inactiveTimer;
   bool _isUserActive = true;
   bool _showVideoControlView = true;
   bool _isControllerInitialized = false;
@@ -35,7 +35,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     super.initState();
     FloatingUtil.listen(_onFloatingStateChanged);
 
-    if (FloatingUtil.isShown) {
+    if (FloatingUtil.state != FloatingState.closed) {
       _initializeVideoController();
     }
   }
@@ -43,19 +43,17 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   @override
   void dispose() {
     _disposeController();
-    _inactiveTimer.cancel();
+    _inactiveTimer?.cancel();
     super.dispose();
   }
 
   void _onFloatingStateChanged() {
     setState(() {
-      if (FloatingUtil.isShown) {
-        // Initialize the video controller if not already initialized
+      if (FloatingUtil.state != FloatingState.closed) {
         if (!_isControllerInitialized) {
           _initializeVideoController();
         }
       } else {
-        // Dispose the controller when floating is closed
         _disposeController();
       }
     });
@@ -67,10 +65,9 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
         setState(() {
           _isControllerInitialized = true;
         });
-        _controller.play(); // Auto-play when initialized
+        _controller.play();
       });
 
-    // Start inactive timer to hide controls after inactivity
     _startInactiveTimer();
   }
 
@@ -80,6 +77,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   }
 
   void _startInactiveTimer() {
+    _inactiveTimer?.cancel();
     _inactiveTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_isUserActive) {
         setState(() {
@@ -91,10 +89,12 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
 
   void _resetTimer() {
     setState(() {
-      _isUserActive = true;
-      _inactiveTimer.cancel();
-      _startInactiveTimer();
+      _isUserActive = true; // Ensure controls are shown
+      _showVideoControlView = true; // Force show controls
     });
+
+    _inactiveTimer?.cancel();
+    _startInactiveTimer();
   }
 
   Widget buildFullScreen({required Widget child}) {
@@ -117,7 +117,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     if (_controller.value.isInitialized) {
       return GestureDetector(
         onTap: () {
-          //TODO: Fix bug show/hide footer and header
           _resetTimer();
         },
         child: buildFullScreen(
@@ -371,14 +370,93 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     );
   }
 
+  Widget buildMinimizedHeader() {
+    return Positioned(
+      top: 5,
+      right: 0,
+      left: 0,
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            color: Colors.white,
+            iconSize: 20,
+            onPressed: () {},
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.open_in_full),
+            color: Colors.white,
+            iconSize: 20,
+            onPressed: () {
+              PIPView.of(context)?.stopFloating();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            color: Colors.white,
+            iconSize: 20,
+            onPressed: () {
+              FloatingUtil.close();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildMinimizedFooter() {
+    return Positioned(
+      bottom: 5,
+      right: 0,
+      left: 0,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.keyboard_double_arrow_left,
+            ),
+            color: Colors.white,
+            iconSize: 20,
+          ),
+          IconButton(
+            onPressed: () {
+              _controller.play();
+            },
+            icon: const Icon(
+              Icons.play_arrow_rounded,
+            ),
+            color: Colors.white,
+            iconSize: 22,
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.keyboard_double_arrow_right,
+            ),
+            color: Colors.white,
+            iconSize: 20,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!FloatingUtil.isShown) {
+    if (FloatingUtil.state == FloatingState.closed) {
       return const SizedBox.shrink();
     }
 
     return PIPView(
       initialCorner: PIPViewCorner.bottomRight,
+      onInteractionChange: (isInteractive) {
+        if (isInteractive) {
+          _resetTimer();
+        }
+      },
       builder: (pipContext, isFloating) {
         return Scaffold(
           resizeToAvoidBottomInset: !isFloating,
@@ -388,8 +466,18 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                 Positioned.fill(
                   child: buildVideoPlayView(),
                 ),
-                buildHeader(pipContext),
-                buildFooter(),
+                if (FloatingUtil.state == FloatingState.minimized)
+                  _isUserActive
+                      ? buildMinimizedHeader()
+                      : const SizedBox.shrink()
+                else
+                  buildHeader(pipContext),
+                if (FloatingUtil.state == FloatingState.minimized)
+                  _isUserActive
+                      ? buildMinimizedFooter()
+                      : const SizedBox.shrink()
+                else
+                  buildFooter(),
               ],
             ),
           ),

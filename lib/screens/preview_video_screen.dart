@@ -79,7 +79,6 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
   }
 
   void _showDiscardDialog() {
-    print("run open dialog");
     showDialog(
       context: context,
       builder: (ctx) {
