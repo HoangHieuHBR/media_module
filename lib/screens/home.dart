@@ -259,7 +259,11 @@ class _HomePageState extends State<HomePage> {
               child: FutureBuilder(
                   future: controller.initialize(),
                   builder: (context, snapshot) {
+                    String videoDuration = '0:00';
+
                     if (snapshot.connectionState == ConnectionState.done) {
+                      videoDuration = _videoDuration(controller.value.duration);
+
                       return Container(
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
@@ -274,7 +278,7 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.white,
                             ),
                             Text(
-                              _videoDuration(controller.value.duration),
+                              videoDuration,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
@@ -300,7 +304,7 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.white,
                             ),
                             Text(
-                              '0:00',
+                              videoDuration,
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall

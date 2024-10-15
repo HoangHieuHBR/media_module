@@ -289,6 +289,7 @@ class _PreviewVideoScreenState extends State<PreviewVideoScreen> {
             child: SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.8,
               width: MediaQuery.sizeOf(context).width,
+              
               child: Stack(
                 children: [
                   Positioned.fill(

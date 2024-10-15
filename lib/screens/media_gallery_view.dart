@@ -159,6 +159,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
             IconButton(
               onPressed: () {
                 FloatingUtil.minimize(pipContext);
+                _controller.pause();
               },
               icon: const Icon(
                 Icons.picture_in_picture_outlined,
@@ -380,14 +381,14 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
           IconButton(
             icon: const Icon(Icons.settings),
             color: Colors.white,
-            iconSize: 20,
+            iconSize: 70,
             onPressed: () {},
           ),
           const Spacer(),
           IconButton(
             icon: const Icon(Icons.open_in_full),
             color: Colors.white,
-            iconSize: 20,
+            iconSize: 70,
             onPressed: () {
               PIPView.of(context)?.stopFloating();
             },
@@ -395,7 +396,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
           IconButton(
             icon: const Icon(Icons.close),
             color: Colors.white,
-            iconSize: 20,
+            iconSize: 70,
             onPressed: () {
               FloatingUtil.close();
             },
@@ -411,7 +412,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
       right: 0,
       left: 0,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
             onPressed: () {},
@@ -419,17 +420,18 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
               Icons.keyboard_double_arrow_left,
             ),
             color: Colors.white,
-            iconSize: 20,
+            iconSize: 80,
           ),
           IconButton(
             onPressed: () {
+              print("Run this function");
               _controller.play();
             },
             icon: const Icon(
               Icons.play_arrow_rounded,
             ),
             color: Colors.white,
-            iconSize: 22,
+            iconSize: 82,
           ),
           IconButton(
             onPressed: () {},
@@ -437,7 +439,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
               Icons.keyboard_double_arrow_right,
             ),
             color: Colors.white,
-            iconSize: 20,
+            iconSize: 80,
           ),
         ],
       ),
@@ -450,11 +452,22 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
       return const SizedBox.shrink();
     }
 
+    final videoImageSize = _controller.value.size;
+
     return PIPView(
+      floatingHeight: videoImageSize.height * 0.35,
+      floatingWidth: videoImageSize.width * 0.3,
       initialCorner: PIPViewCorner.bottomRight,
       onInteractionChange: (isInteractive) {
         if (isInteractive) {
+          _isUserActive = isInteractive;
           _resetTimer();
+        }
+      },
+      onDoubletapPIPView: () {
+        if (FloatingUtil.state == FloatingState.minimized) {
+          FloatingUtil.showFull();
+          _controller.play();
         }
       },
       builder: (pipContext, isFloating) {
@@ -466,17 +479,9 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                 Positioned.fill(
                   child: buildVideoPlayView(),
                 ),
-                if (FloatingUtil.state == FloatingState.minimized)
-                  _isUserActive
-                      ? buildMinimizedHeader()
-                      : const SizedBox.shrink()
-                else
+                if (FloatingUtil.state != FloatingState.minimized)
                   buildHeader(pipContext),
-                if (FloatingUtil.state == FloatingState.minimized)
-                  _isUserActive
-                      ? buildMinimizedFooter()
-                      : const SizedBox.shrink()
-                else
+                if (FloatingUtil.state != FloatingState.minimized)
                   buildFooter(),
               ],
             ),
