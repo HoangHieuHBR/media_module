@@ -97,6 +97,17 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     _startInactiveTimer();
   }
 
+  void _handlePIPViewAction(PIPViewAction action) {
+    switch (action) {
+      case PIPViewAction.play:
+        _controller.play();
+        break;
+      case PIPViewAction.forward:
+      case PIPViewAction.backward:
+        break;
+    }
+  }
+
   Widget buildFullScreen({required Widget child}) {
     final size = _controller.value.size;
     final width = size.width;
@@ -371,81 +382,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     );
   }
 
-  Widget buildMinimizedHeader() {
-    return Positioned(
-      top: 5,
-      right: 0,
-      left: 0,
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            color: Colors.white,
-            iconSize: 70,
-            onPressed: () {},
-          ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.open_in_full),
-            color: Colors.white,
-            iconSize: 70,
-            onPressed: () {
-              PIPView.of(context)?.stopFloating();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.close),
-            color: Colors.white,
-            iconSize: 70,
-            onPressed: () {
-              FloatingUtil.close();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildMinimizedFooter() {
-    return Positioned(
-      bottom: 5,
-      right: 0,
-      left: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.keyboard_double_arrow_left,
-            ),
-            color: Colors.white,
-            iconSize: 80,
-          ),
-          IconButton(
-            onPressed: () {
-              print("Run this function");
-              _controller.play();
-            },
-            icon: const Icon(
-              Icons.play_arrow_rounded,
-            ),
-            color: Colors.white,
-            iconSize: 82,
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.keyboard_double_arrow_right,
-            ),
-            color: Colors.white,
-            iconSize: 80,
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (FloatingUtil.state == FloatingState.closed) {
@@ -470,6 +406,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
           _controller.play();
         }
       },
+      onAction: _handlePIPViewAction,
       builder: (pipContext, isFloating) {
         return Scaffold(
           resizeToAvoidBottomInset: !isFloating,
