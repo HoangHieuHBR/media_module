@@ -31,6 +31,6 @@ class FloatingUtil {
   static void listen(VoidCallback callback) {
     _floatingState.addListener(callback);
   }
-
+  
   FloatingUtil._internal();
 }

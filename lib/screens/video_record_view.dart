@@ -71,7 +71,7 @@ class _VideoRecordViewState extends State<VideoRecordView> {
       CameraDescription cameraDescription) async {
     final CameraController cameraController = CameraController(
       cameraDescription,
-      kIsWeb ? ResolutionPreset.max : ResolutionPreset.medium,
+      ResolutionPreset.veryHigh,
       enableAudio: enableAudio,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
