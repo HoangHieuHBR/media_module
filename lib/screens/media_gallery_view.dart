@@ -378,7 +378,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
 
   Widget buildMinimizedHeader() {
     return Visibility(
-      visible: _isUserInteractive && pipViewSize == PIPViewSize.medium,
+      visible: pipViewSize == PIPViewSize.medium,
       child: Positioned(
         top: 5,
         right: 0,

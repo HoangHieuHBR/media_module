@@ -18,7 +18,8 @@ void _logError(String code, String? message) {
   print('Error: $code${message == null ? '' : '\nError Message: $message'}');
 }
 
-class _VideoRecordViewState extends State<VideoRecordView> {
+class _VideoRecordViewState extends State<VideoRecordView>
+    with WidgetsBindingObserver {
   CameraController? controller;
   VideoPlayerController? videoController;
 
@@ -46,15 +47,36 @@ class _VideoRecordViewState extends State<VideoRecordView> {
   @override
   void initState() {
     super.initState();
-
+    // WidgetsBinding.instance.addObserver(this);
     _initCamera();
 
     _stopwatch = Stopwatch();
   }
 
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   final CameraController? cameraController = controller;
+
+  //   // App state changed before we got the chance to initialize.
+  //   if (cameraController == null || !cameraController.value.isInitialized) {
+  //     return;
+  //   }
+
+  //   if (state == AppLifecycleState.inactive) {
+  //     cameraController.dispose();
+  //   } else if (state == AppLifecycleState.resumed &&
+  //       !controller!.value.isInitialized) {
+  //     // check if controller is already initialized
+  //     _initializeCameraController(cameraController.description);
+  //   }
+  // }
+
   @override
   void dispose() {
+    // WidgetsBinding.instance.removeObserver(this);
+    // if (controller != null) {
     controller?.dispose();
+    // }
     super.dispose();
   }
 
@@ -71,7 +93,7 @@ class _VideoRecordViewState extends State<VideoRecordView> {
       CameraDescription cameraDescription) async {
     final CameraController cameraController = CameraController(
       cameraDescription,
-      ResolutionPreset.veryHigh,
+      ResolutionPreset.ultraHigh,
       enableAudio: enableAudio,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
