@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -20,5 +21,16 @@ class AudioRecordFileHelper {
       await recordsDir.create();
     }
     return recordsDir;
+  }
+
+  Future<void> deleteRecord(String filePath) async {
+    final file = File(filePath);
+
+    try {
+      await file.delete();
+      log('file deleted');
+    } catch (e) {
+      throw ('File does not exist');
+    }
   }
 }

@@ -1,2 +1,2 @@
 export 'home.dart';
-export 'video_record_view.dart';
+export 'components/video/video_record_view.dart';
