@@ -41,7 +41,7 @@ class AudioRecordController {
   }
 
   Future<void> start() async {
-    final isMicroPermissionGranted = await _checkMicrophonePermission();
+    final isMicroPermissionGranted = await checkMicrophonePermission();
 
     if (!isMicroPermissionGranted) {
       throw Exception('Microphone permission is not granted');
@@ -74,14 +74,14 @@ class AudioRecordController {
     _audioRecorder.resume();
   }
 
-  Future<File> stop() async {
+  Future<File?> stop() async {
     final path = await _audioRecorder.stop();
 
     if (path != null) {
       _resetRecordDuration();
       return File(path);
     } else {
-      throw Exception('Recording failed');
+      return null;
     }
   }
 
@@ -102,7 +102,7 @@ class AudioRecordController {
     _recordDurationTimer = null;
   }
 
-  Future<bool> _checkMicrophonePermission() async {
+  Future<bool> checkMicrophonePermission() async {
     const microPermission = Permission.microphone;
     if (await microPermission.isGranted) {
       return true;

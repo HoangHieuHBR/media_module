@@ -47,6 +47,8 @@ class _AudioWavesViewState extends State<AudioWavesView> {
   Widget build(BuildContext context) {
     return SizedBox(
       height: wavesMaxHeight,
+      width: MediaQuery.of(context).size.width * 0.6,
+    
       child: ListView.builder(
         controller: _scrollController,
         itemCount: amplitudes.length,
@@ -59,25 +61,22 @@ class _AudioWavesViewState extends State<AudioWavesView> {
 
           double waveHeight = wavesMaxHeight * amplPercentage;
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2.0),
-            child: Center(
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: waveHeight),
-                duration: const Duration(milliseconds: 140),
-                curve: Curves.decelerate,
-                builder: (context, waveHeight, child) {
-                  return SizedBox(
-                    height: waveHeight,
-                    width: 8,
-                    child: child,
-                  );
-                },
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+          return Center(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: waveHeight),
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.decelerate,
+              builder: (context, waveHeight, child) {
+                return SizedBox(
+                  height: waveHeight,
+                  width: 8,
+                  child: child,
+                );
+              },
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
