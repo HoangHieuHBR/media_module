@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:media_module/screens/components/audio/audio_record_controller.dart';
-import 'package:media_module/screens/components/audio/audio_waves_view.dart';
-import 'package:record/record.dart';
+import 'package:media_module/screens/components/audio/audio_record_waves_view.dart';
 
-import '../../../widgets/play_pause_button.dart';
 import '../../../widgets/widgets.dart';
 
 class RecordAudioView extends StatelessWidget {
@@ -54,43 +52,11 @@ class _AudioRecordViewBodyState extends State<AudioRecordViewBody> {
     super.dispose();
   }
 
-  Widget buildRecordButton() {
-    return StreamBuilder(
-      stream: widget.audioRecordController.recordStateStream,
-      builder: (context, snapshot) {
-        final recordState = snapshot.data ?? RecordState.record;
-
-        return PlayPauseButton(
-          isPlaying: recordState == RecordState.record,
-          onTap: () {
-            if (recordState == RecordState.pause) {
-              widget.audioRecordController.resume();
-            } else {
-              widget.audioRecordController.pause();
-            }
-          },
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.ltr,
-      child:
-          // Column(
-          //   children: [
-          //     const AudioWavesView(),
-          //     const SizedBox(height: 16),
-          //     const _TimerText(),
-          //     const SizedBox(
-          //       height: 10,
-          //     ),
-          //     buildRecordButton(),
-          //   ],
-          // ),
-          CustomBottomSheet(
+      child: CustomBottomSheet(
         bottomSheetHeight: widget.bottomSheetHeight,
         bottomSheetBody: Column(
           children: [
@@ -147,7 +113,6 @@ class _AudioRecordViewBodyState extends State<AudioRecordViewBody> {
                       ),
                     ),
                   ),
-                  // buildRecordButton(),
                 ],
               ),
             ),

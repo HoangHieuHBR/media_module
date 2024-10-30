@@ -180,16 +180,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   Widget buildFooter() {
     const footerHeight = 120.0;
 
-    List<PlaybackSpeedModel> playbackSpeedList = [
-      PlaybackSpeedModel(title: '0.25x', id: '0.25X', speed: 0.25),
-      PlaybackSpeedModel(title: '0.5x', id: '0.5X', speed: 0.5),
-      PlaybackSpeedModel(title: '0.75x', id: '0.75X', speed: 0.75),
-      PlaybackSpeedModel(title: '1x', id: '1X', speed: 1),
-      PlaybackSpeedModel(title: '1.25x', id: '1.25X', speed: 1.25),
-      PlaybackSpeedModel(title: '1.5x', id: '1.5X', speed: 1.5),
-      PlaybackSpeedModel(title: '2x', id: '2X', speed: 2),
-    ];
-
     void selectVideoSpeedBottomsheet() {
       showModalBottomSheet(
         context: context,
@@ -518,3 +508,13 @@ class PlaybackSpeedModel {
     this.speed = 1,
   });
 }
+
+List<PlaybackSpeedModel> playbackSpeedList = [
+  PlaybackSpeedModel(title: '0.25x', id: '0.25X', speed: 0.25),
+  PlaybackSpeedModel(title: '0.5x', id: '0.5X', speed: 0.5),
+  PlaybackSpeedModel(title: '0.75x', id: '0.75X', speed: 0.75),
+  PlaybackSpeedModel(title: '1x', id: '1X', speed: 1),
+  PlaybackSpeedModel(title: '1.25x', id: '1.25X', speed: 1.25),
+  PlaybackSpeedModel(title: '1.5x', id: '1.5X', speed: 1.5),
+  PlaybackSpeedModel(title: '2x', id: '2X', speed: 2),
+];

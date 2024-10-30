@@ -43,7 +43,7 @@ class _AttachmentActionState extends State<AttachmentAction> {
   }
 
   void _showRecordAudioView() async {
-    showModalBottomSheet(
+   var result = await showModalBottomSheet(
       enableDrag: _isRecordingAudio ? false : true,
       isDismissible: _isRecordingAudio ? false : true,
       context: context,
@@ -55,6 +55,10 @@ class _AttachmentActionState extends State<AttachmentAction> {
         );
       },
     );
+
+    if (result != null && result is File) {
+      widget.onFileAttached([result]);
+    }
   }
 
   void _openRecordVideo() async {
