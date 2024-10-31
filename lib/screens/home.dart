@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:media_module/utils/floating_util.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,7 +10,6 @@ import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../utils/file_util.dart';
-import '../widgets/play_pause_button.dart';
 import '../widgets/widgets.dart';
 import 'components/attachment_action.dart';
 import 'components/audio/audio_play_waves_view.dart';
@@ -67,11 +65,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final PlayerController playerController;
-  late StreamSubscription<PlayerState> playerStateSubscription;
-  ValueNotifier<PlaybackSpeedModel> playbackSpeed = ValueNotifier(
-    PlaybackSpeedModel(),
-  );
   List<AttachmentItem> _attachFiles = [];
   AttachmentItem? _selectedAttachment;
 
@@ -87,17 +80,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     getTemporaryDirectory().then((d) => _tempDir = d.path);
-    playerController = PlayerController();
-    playerStateSubscription = playerController.onPlayerStateChanged.listen((_) {
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    playerStateSubscription.cancel();
-    playerController.dispose();
-    super.dispose();
   }
 
   void _showAttachmentBottomSheet() {
@@ -345,79 +327,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget audioAttachmentItem(AttachmentItem attachment) {
-    Widget buildPlayButton() {
-      return PlayPauseButton(
-        isPlaying: playerController.playerState == PlayerState.playing,
-        onTap: () {
-          if (playerController.playerState == PlayerState.playing) {
-            playerController.pausePlayer();
-          } else {
-            playerController.startPlayer();
-          }
-        },
-      );
-    }
-
-    Widget buildChangeSpeedButton() {
-      return InkWell(
-        onTap: () {
-          int currentIndex = playbackSpeedList.indexOf(playbackSpeed.value);
-          int nextIndex = (currentIndex + 1) % playbackSpeedList.length;
-          playbackSpeed.value = playbackSpeedList[nextIndex];
-          playerController.setRate(playbackSpeed.value.speed);
-        },
-        child: Container(
-          width: 70,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Center(
-            child: ValueListenableBuilder(
-              valueListenable: playbackSpeed,
-              builder: (context, value, _) {
-                return Text(
-                  value.title,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                );
-              },
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      width: MediaQuery.sizeOf(context).width * 0.8,
-      height: 100,
-      clipBehavior: Clip.hardEdge,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-          width: 0.5,
-        ),
-      ),
-      child: Row(
-        children: [
-          buildPlayButton(),
-          const SizedBox(
-            width: 5,
-          ),
-          AudioPlayWavesView(
-            audioFile: attachment.file,
-            audioPlayerController: playerController,
-            waveSize: Size(MediaQuery.sizeOf(context).width * 0.6, 50),
-          ),
-          const SizedBox(
-            width: 5,
-          ),
-          buildChangeSpeedButton(),
-        ],
-      ),
+    return AudioPlayView(
+      audioFile: attachment.file,
     );
   }
 
