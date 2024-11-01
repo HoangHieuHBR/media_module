@@ -48,7 +48,6 @@ class _AudioWavesViewState extends State<AudioWavesView> {
     return SizedBox(
       height: wavesMaxHeight,
       width: MediaQuery.of(context).size.width * 0.6,
-    
       child: ListView.builder(
         controller: _scrollController,
         itemCount: amplitudes.length,

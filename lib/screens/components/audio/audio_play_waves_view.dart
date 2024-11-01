@@ -54,8 +54,6 @@ class _AudioPlayViewState extends State<AudioPlayView> {
   Future<void> _preparePlayer() async {
     file = widget.audioFile;
 
-    print("File path: ${file?.path}");
-
     if (file?.path == null) {
       return;
     }
@@ -63,8 +61,7 @@ class _AudioPlayViewState extends State<AudioPlayView> {
     playerController.updateFrequency = UpdateFrequency.high;
 
     if (mounted) {
-      final samples = const PlayerWaveStyle()
-          .getSamplesForWidth(MediaQuery.sizeOf(context).width * 0.5);
+      final samples = const PlayerWaveStyle().getSamplesForWidth(200);
 
       await playerController.preparePlayer(
         path: file!.path,
@@ -83,19 +80,16 @@ class _AudioPlayViewState extends State<AudioPlayView> {
   Widget buildWaveformView() {
     return Row(
       children: [
-        Container(
-          color: Colors.red,
-          child: AudioFileWaveforms(
-            size: Size(MediaQuery.sizeOf(context).width * 0.5, 50),
-            playerController: playerController,
-            waveformData: waveformData,
-            playerWaveStyle: PlayerWaveStyle(
-              fixedWaveColor: Colors.grey[300]!,
-              liveWaveColor: Theme.of(context).primaryColor,
-              spacing: 8,
-              showSeekLine: false,
-              scaleFactor: 200,
-            ),
+        AudioFileWaveforms(
+          size: Size(MediaQuery.sizeOf(context).width * 0.5, 70),
+          playerController: playerController,
+          waveformData: waveformData,
+          playerWaveStyle: PlayerWaveStyle(
+            fixedWaveColor: Colors.grey[300]!,
+            liveWaveColor: Theme.of(context).primaryColor,
+            spacing: 8,
+            showSeekLine: false,
+            scaleFactor: 200,
           ),
         ),
         const SizedBox(
@@ -111,7 +105,6 @@ class _AudioPlayViewState extends State<AudioPlayView> {
       initialData: 0,
       stream: playerController.onCurrentDurationChanged,
       builder: (context, snapshot) {
-        print("Current duration: ${snapshot.data}");
         final durationInSec = snapshot.data != null
             ? (snapshot.data != 0
                 ? (snapshot.data! / 1000).round()
@@ -189,6 +182,7 @@ class _AudioPlayViewState extends State<AudioPlayView> {
         ),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           buildPlayButton(),

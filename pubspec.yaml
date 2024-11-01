@@ -21,7 +21,7 @@ dependencies:
   floating: ^4.0.1
   uuid: ^4.5.1
   record: ^5.1.2
-  audio_waveforms: ^1.1.1
+  # audio_waveforms: ^1.1.1
   permission_handler: ^11.3.1
   flutter_bloc: ^8.1.6
 
@@ -29,6 +29,8 @@ dependencies:
     path: ../video_thumbnail
   pip_view:
     path: ../pip_view
+  audio_waveforms:
+    path: ../audio_waveforms
 
 dev_dependencies:
   flutter_test:
