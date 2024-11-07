@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:media_module/config/config.dart';
@@ -8,6 +9,7 @@ import 'package:media_module/screens/components/audio/audio_record_controller.da
 import '../screens.dart';
 import 'audio/audio_record_file_helper.dart';
 import 'audio/audio_record_view.dart';
+import 'audio/audio_record_view_v2.dart';
 
 class AttachmentAction extends StatefulWidget {
   final Function(List<File?> selectedFiles) onFileAttached;
@@ -27,11 +29,28 @@ class _AttachmentActionState extends State<AttachmentAction> {
   final AudioRecordController _audioRecordController = AudioRecordController(
     AudioRecordFileHelper(),
   );
+  late final RecorderController recorderController;
 
   bool _isRecordingAudio = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
+    recorderController = RecorderController()
+      ..androidEncoder = AndroidEncoder.aac
+      ..androidOutputFormat = AndroidOutputFormat.mpeg4
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..sampleRate = 44100
+      ..bitRate = 48000;
+  }
+
   void _showModalAndStartRecording() async {
     final permission = await _audioRecordController.checkMicrophonePermission();
+    // final permission = await recorderController.checkPermission();
     if (permission) {
       setState(() {
         _isRecordingAudio = true;
@@ -43,14 +62,18 @@ class _AttachmentActionState extends State<AttachmentAction> {
   }
 
   void _showRecordAudioView() async {
-   var result = await showModalBottomSheet(
+    var result = await showModalBottomSheet(
       enableDrag: _isRecordingAudio ? false : true,
       isDismissible: _isRecordingAudio ? false : true,
       context: context,
       backgroundColor: Colors.transparent,
       builder: (btContext) {
-        return RecordAudioView(
-          audioRecordController: _audioRecordController,
+        // return RecordAudioView(
+        //   audioRecordController: _audioRecordController,
+        //   bottomSheetHeight: MediaQuery.of(context).size.height * 0.15,
+        // );
+        return AudioRecordViewV2(
+          recorderController: recorderController,
           bottomSheetHeight: MediaQuery.of(context).size.height * 0.15,
         );
       },

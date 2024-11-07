@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../widgets/play_pause_button.dart';
 import '../../media_gallery_view.dart';
@@ -61,11 +62,11 @@ class _AudioPlayViewState extends State<AudioPlayView> {
     playerController.updateFrequency = UpdateFrequency.high;
 
     if (mounted) {
-      final samples = const PlayerWaveStyle().getSamplesForWidth(200);
+      final samples = const PlayerWaveStyle()
+          .getSamplesForWidth(MediaQuery.sizeOf(context).width * 0.5);
 
-      await playerController.preparePlayer(
+      playerController.preparePlayer(
         path: file!.path,
-        noOfSamples: samples,
       );
 
       playerController
@@ -83,7 +84,8 @@ class _AudioPlayViewState extends State<AudioPlayView> {
         AudioFileWaveforms(
           size: Size(MediaQuery.sizeOf(context).width * 0.5, 70),
           playerController: playerController,
-          waveformData: waveformData,
+          // waveformData: waveformData,
+          waveformType: WaveformType.fitWidth,
           playerWaveStyle: PlayerWaveStyle(
             fixedWaveColor: Colors.grey[300]!,
             liveWaveColor: Theme.of(context).primaryColor,
