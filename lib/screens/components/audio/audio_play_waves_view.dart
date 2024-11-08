@@ -91,7 +91,6 @@ class _AudioPlayViewState extends State<AudioPlayView> {
             liveWaveColor: Theme.of(context).primaryColor,
             spacing: 8,
             showSeekLine: false,
-            scaleFactor: 200,
           ),
         ),
         const SizedBox(

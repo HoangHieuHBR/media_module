@@ -367,81 +367,94 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   }
 
   Widget buildMinimizedHeader() {
-    return Visibility(
-      visible: pipViewSize == PIPViewSize.medium,
-      child: Positioned(
-        top: 5,
-        right: 0,
-        left: 0,
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.settings),
-              color: Colors.white,
-              iconSize: 70,
-              onPressed: () {},
+    return pipViewSize == PIPViewSize.medium
+        ? Positioned(
+            top: 5,
+            right: 0,
+            left: 0,
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  color: Colors.white,
+                  iconSize: 70,
+                  onPressed: () {},
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.open_in_full),
+                  color: Colors.white,
+                  iconSize: 70,
+                  onPressed: () {
+                    PIPView.of(context)?.stopFloating();
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  color: Colors.white,
+                  iconSize: 70,
+                  onPressed: () {
+                    FloatingUtil.close();
+                  },
+                ),
+              ],
             ),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.open_in_full),
-              color: Colors.white,
-              iconSize: 70,
-              onPressed: () {
-                PIPView.of(context)?.stopFloating();
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              color: Colors.white,
-              iconSize: 70,
-              onPressed: () {
-                FloatingUtil.close();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+          )
+        : const Positioned(
+            top: 0,
+            right: 0,
+            left: 0,
+            child: SizedBox.shrink(),
+          );
   }
 
   Widget buildMinimizedFooter() {
-    return Visibility(
-      visible: _isUserInteractive && pipViewSize == PIPViewSize.medium,
-      child: Positioned(
-        bottom: 5,
-        right: 0,
-        left: 0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.keyboard_double_arrow_left,
-              ),
-              color: Colors.white,
-              iconSize: 80,
+    return pipViewSize == PIPViewSize.medium
+        ? Positioned(
+            bottom: 5,
+            right: 0,
+            left: 0,
+            child: Container(
+              height: 50,
+              width: MediaQuery.sizeOf(context).width,
+              color: Colors.red,
             ),
-            IconButton(
-              onPressed: () => _controller.play(),
-              icon: const Icon(
-                Icons.play_arrow_rounded,
-              ),
-              color: Colors.white,
-              iconSize: 82,
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.keyboard_double_arrow_right,
-              ),
-              color: Colors.white,
-              iconSize: 80,
-            ),
-          ],
-        ),
-      ),
-    );
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     IconButton(
+            //       onPressed: () {},
+            //       icon: const Icon(
+            //         Icons.keyboard_double_arrow_left,
+            //       ),
+            //       color: Colors.white,
+            //       iconSize: 80,
+            //     ),
+            //     IconButton(
+            //       onPressed: () => _controller.play(),
+            //       icon: const Icon(
+            //         Icons.play_arrow_rounded,
+            //       ),
+            //       color: Colors.white,
+            //       iconSize: 82,
+            //     ),
+            //     IconButton(
+            //       onPressed: () {},
+            //       icon: const Icon(
+            //         Icons.keyboard_double_arrow_right,
+            //       ),
+            //       color: Colors.white,
+            //       iconSize: 80,
+            //     ),
+            //   ],
+            // ),
+          )
+        : const Positioned(
+            bottom: 5,
+            right: 0,
+            left: 0,
+            child: SizedBox.shrink(),
+          );
   }
 
   @override
@@ -456,6 +469,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
       floatingHeight: videoImageSize.height * 0.13,
       floatingWidth: videoImageSize.width * 0.13,
       initialCorner: PIPViewCorner.bottomRight,
+      pipViewState: pipViewSize,
       onInteractionChange: (isInteractive) {
         setState(() {
           _isUserInteractive = isInteractive;
@@ -465,6 +479,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
         if (FloatingUtil.state == FloatingState.minimized) {
           FloatingUtil.showFull();
           _controller.play();
+          pipViewSize = PIPViewSize.full;
         }
       },
       onPIPViewSizeChange: (size) {
@@ -473,6 +488,8 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
         });
       },
       builder: (pipContext, isFloating) {
+        print("PIPViewSize: $pipViewSize");
+        print("_isUserInteractive: $_isUserInteractive");
         return Scaffold(
           resizeToAvoidBottomInset: !isFloating,
           body: SafeArea(
@@ -481,13 +498,14 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                 Positioned.fill(
                   child: buildVideoPlayView(),
                 ),
-                if (FloatingUtil.state != FloatingState.minimized)
+                if (pipViewSize != PIPViewSize.small)
                   buildHeader(pipContext)
                 else
                   buildMinimizedHeader(),
-                if (FloatingUtil.state != FloatingState.minimized)
-                  buildFooter(),
-                // buildMinimizedFooter(),
+                if (pipViewSize != PIPViewSize.small)
+                  buildFooter()
+                else
+                  buildMinimizedFooter(),
               ],
             ),
           ),

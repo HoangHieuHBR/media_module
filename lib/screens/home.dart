@@ -164,13 +164,14 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Scrollbar(
-        child: ListView.builder(
+        child: ListView.separated(
           itemCount: _attachFiles.length,
           shrinkWrap: true,
           itemBuilder: (context, index) {
             var attachment = _attachFiles[index];
             return attachmentItem(attachment);
           },
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
         ),
       ),
     );
@@ -201,7 +202,7 @@ class _HomePageState extends State<HomePage> {
         FloatingUtil.showFull();
       },
       child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.3,
+        height: MediaQuery.sizeOf(context).height * 0.25,
         width: MediaQuery.sizeOf(context).width * 0.8,
         child: Stack(
           children: [
@@ -239,17 +240,21 @@ class _HomePageState extends State<HomePage> {
                       child: image,
                     );
                   } else {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.network(
-                          'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png',
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                          filterQuality: FilterQuality.medium,
-                        ),
-                      ],
+                    return SizedBox(
+                      height: MediaQuery.sizeOf(context).height * 0.25,
+                      width: MediaQuery.sizeOf(context).width * 0.8,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.network(
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.medium,
+                          ),
+                        ],
+                      ),
                     );
                   }
                 },

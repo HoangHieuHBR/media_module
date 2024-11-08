@@ -8,7 +8,6 @@ import 'package:media_module/screens/components/audio/audio_record_controller.da
 
 import '../screens.dart';
 import 'audio/audio_record_file_helper.dart';
-import 'audio/audio_record_view.dart';
 import 'audio/audio_record_view_v2.dart';
 
 class AttachmentAction extends StatefulWidget {
