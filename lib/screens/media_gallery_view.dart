@@ -40,6 +40,8 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     if (FloatingUtil.state != FloatingState.closed) {
       _initializeVideoController();
     }
+
+    pipViewSize = PIPViewSize.full;
   }
 
   @override
@@ -366,95 +368,94 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     );
   }
 
-  Widget buildMinimizedHeader() {
-    return pipViewSize == PIPViewSize.medium
-        ? Positioned(
-            top: 5,
-            right: 0,
-            left: 0,
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  color: Colors.white,
-                  iconSize: 70,
-                  onPressed: () {},
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.open_in_full),
-                  color: Colors.white,
-                  iconSize: 70,
-                  onPressed: () {
-                    PIPView.of(context)?.stopFloating();
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  color: Colors.white,
-                  iconSize: 70,
-                  onPressed: () {
-                    FloatingUtil.close();
-                  },
-                ),
-              ],
-            ),
-          )
-        : const Positioned(
-            top: 0,
-            right: 0,
-            left: 0,
-            child: SizedBox.shrink(),
-          );
+  Widget buildMediumHeader() {
+    return Positioned(
+      top: 10,
+      left: 0,
+      right: 0,
+      child: Container(
+        color: Colors.red.withOpacity(0.5),
+        height: 50,
+        width: MediaQuery.sizeOf(context).width,
+        // child:
+        // Row(
+        //   mainAxisSize: MainAxisSize.min,
+        //   children: [
+        //     Flexible(
+        //       child: IconButton(
+        //         icon: const Icon(Icons.settings),
+        //         color: Colors.white,
+        //         iconSize: 70,
+        //         onPressed: () {},
+        //       ),
+        //     ),
+        //     const Spacer(),
+        //     Flexible(
+        //       child: IconButton(
+        //         icon: const Icon(Icons.open_in_full),
+        //         color: Colors.white,
+        //         iconSize: 70,
+        //         onPressed: () {
+        //           PIPView.of(context)?.stopFloating();
+        //         },
+        //       ),
+        //     ),
+        //     Flexible(
+        //       child: IconButton(
+        //         icon: const Icon(Icons.close),
+        //         color: Colors.white,
+        //         iconSize: 70,
+        //         onPressed: () {
+        //           FloatingUtil.close();
+        //         },
+        //       ),
+        //     ),
+        //   ],
+        // ),
+      ),
+    );
   }
 
-  Widget buildMinimizedFooter() {
-    return pipViewSize == PIPViewSize.medium
-        ? Positioned(
-            bottom: 5,
-            right: 0,
-            left: 0,
-            child: Container(
-              height: 50,
-              width: MediaQuery.sizeOf(context).width,
-              color: Colors.red,
+  Widget buildMediumFooter() {
+    return Positioned(
+      bottom: 10,
+      left: 0,
+      right: 0,
+      child: Container(
+        color: Colors.green.withOpacity(0.5),
+        height: 50,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.keyboard_double_arrow_left,
+              ),
+              color: Colors.white,
+              iconSize: 80,
             ),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.center,
-            //   children: [
-            //     IconButton(
-            //       onPressed: () {},
-            //       icon: const Icon(
-            //         Icons.keyboard_double_arrow_left,
-            //       ),
-            //       color: Colors.white,
-            //       iconSize: 80,
-            //     ),
-            //     IconButton(
-            //       onPressed: () => _controller.play(),
-            //       icon: const Icon(
-            //         Icons.play_arrow_rounded,
-            //       ),
-            //       color: Colors.white,
-            //       iconSize: 82,
-            //     ),
-            //     IconButton(
-            //       onPressed: () {},
-            //       icon: const Icon(
-            //         Icons.keyboard_double_arrow_right,
-            //       ),
-            //       color: Colors.white,
-            //       iconSize: 80,
-            //     ),
-            //   ],
-            // ),
-          )
-        : const Positioned(
-            bottom: 5,
-            right: 0,
-            left: 0,
-            child: SizedBox.shrink(),
-          );
+            IconButton(
+              onPressed: () => _controller.play(),
+              icon: const Icon(
+                Icons.play_arrow_rounded,
+              ),
+              color: Colors.white,
+              iconSize: 82,
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.keyboard_double_arrow_right,
+              ),
+              color: Colors.white,
+              iconSize: 80,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -466,13 +467,13 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     final videoImageSize = _controller.value.size;
 
     return PIPView(
-      floatingHeight: videoImageSize.height * 0.13,
-      floatingWidth: videoImageSize.width * 0.13,
+      floatingHeight: videoImageSize.height * 0.12,
+      floatingWidth: videoImageSize.width * 0.12,
       initialCorner: PIPViewCorner.bottomRight,
       pipViewState: pipViewSize,
       onInteractionChange: (isInteractive) {
         setState(() {
-          _isUserInteractive = isInteractive;
+          _isUserActive = isInteractive;
         });
       },
       onDoubletapPIPView: () {
@@ -487,9 +488,12 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
           pipViewSize = size;
         });
       },
+      onClosePIPView: () {
+        print("Run this");
+        FloatingUtil.close();
+      },
       builder: (pipContext, isFloating) {
         print("PIPViewSize: $pipViewSize");
-        print("_isUserInteractive: $_isUserInteractive");
         return Scaffold(
           resizeToAvoidBottomInset: !isFloating,
           body: SafeArea(
@@ -498,14 +502,36 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                 Positioned.fill(
                   child: buildVideoPlayView(),
                 ),
-                if (pipViewSize != PIPViewSize.small)
-                  buildHeader(pipContext)
-                else
-                  buildMinimizedHeader(),
-                if (pipViewSize != PIPViewSize.small)
-                  buildFooter()
-                else
-                  buildMinimizedFooter(),
+                // if (pipViewSize != PIPViewSize.small)
+                //   buildHeader(pipContext)
+                // else
+                //   buildMediumHeader(),
+                // if (pipViewSize != PIPViewSize.small)
+                //   buildFooter()
+                // else
+                //   buildMediumFooter(),
+                if (pipViewSize == PIPViewSize.full || pipViewSize == null) ...[
+                  buildHeader(pipContext),
+                  buildFooter(),
+                ],
+                if (pipViewSize == PIPViewSize.medium) ...[
+                  buildMediumHeader(),
+                  buildMediumFooter(),
+                ],
+                if (pipViewSize == PIPViewSize.small) ...[
+                  const Positioned(
+                    top: 0,
+                    right: 0,
+                    left: 0,
+                    child: SizedBox.shrink(),
+                  ),
+                  const Positioned(
+                    bottom: 0,
+                    right: 0,
+                    left: 0,
+                    child: SizedBox.shrink(),
+                  ),
+                ],
               ],
             ),
           ),

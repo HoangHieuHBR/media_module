@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../widgets/play_pause_button.dart';
 import '../../media_gallery_view.dart';
