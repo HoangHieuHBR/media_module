@@ -26,7 +26,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   late VideoPlayerController _controller;
   Timer? _inactiveTimer;
   bool _isUserActive = true;
-  bool _isUserInteractive = true;
   bool _showVideoControlView = true;
   bool _isControllerInitialized = false;
   String playbackSpeed = '1X';
@@ -69,10 +68,22 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
         setState(() {
           _isControllerInitialized = true;
         });
-        _controller.play();
+        _playPauseVideo();
       });
+  }
 
-    _startInactiveTimer();
+  void _playPauseVideo() {
+    setState(() {
+      _isUserActive = true;
+      _showVideoControlView = true;
+    });
+
+    if (_controller.value.isPlaying) {
+      _controller.pause();
+      _startInactiveTimer();
+    } else {
+      _controller.play();
+    }
   }
 
   void _disposeController() {
@@ -99,6 +110,11 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
 
     _inactiveTimer?.cancel();
     _startInactiveTimer();
+  }
+
+  void _closePIPView() {
+    FloatingUtil.close();
+    pipViewSize = PIPViewSize.full;
   }
 
   Widget buildFullScreen({required Widget child}) {
@@ -252,16 +268,14 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
         child: ValueListenableBuilder(
             valueListenable: _controller,
             builder: (context, value, child) {
+              if (value.position == value.duration) {
+                _startInactiveTimer();
+              }
+
               return Row(
                 children: [
                   InkWell(
-                    onTap: () {
-                      if (value.isPlaying) {
-                        _controller.pause();
-                      } else {
-                        _controller.play();
-                      }
-                    },
+                    onTap: _playPauseVideo,
                     child: Icon(
                       (value.position == value.duration)
                           ? Icons.replay
@@ -368,94 +382,145 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     );
   }
 
-  Widget buildMediumHeader() {
+  Widget buildMediumHeader(Size videoImageSize) {
     return Positioned(
-      top: 10,
-      left: 0,
-      right: 0,
-      child: Container(
-        color: Colors.red.withOpacity(0.5),
-        height: 50,
-        width: MediaQuery.sizeOf(context).width,
-        // child:
-        // Row(
-        //   mainAxisSize: MainAxisSize.min,
-        //   children: [
-        //     Flexible(
-        //       child: IconButton(
-        //         icon: const Icon(Icons.settings),
-        //         color: Colors.white,
-        //         iconSize: 70,
-        //         onPressed: () {},
-        //       ),
-        //     ),
-        //     const Spacer(),
-        //     Flexible(
-        //       child: IconButton(
-        //         icon: const Icon(Icons.open_in_full),
-        //         color: Colors.white,
-        //         iconSize: 70,
-        //         onPressed: () {
-        //           PIPView.of(context)?.stopFloating();
-        //         },
-        //       ),
-        //     ),
-        //     Flexible(
-        //       child: IconButton(
-        //         icon: const Icon(Icons.close),
-        //         color: Colors.white,
-        //         iconSize: 70,
-        //         onPressed: () {
-        //           FloatingUtil.close();
-        //         },
-        //       ),
-        //     ),
-        //   ],
-        // ),
+      top: videoImageSize.height * 0.12 - 10,
+      left: videoImageSize.width * 0.12 - 10,
+      right: videoImageSize.width * 0.12 - 10,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: IconButton(
+              icon: const Icon(Icons.settings),
+              color: Colors.white,
+              iconSize: 24,
+              onPressed: () {},
+            ),
+          ),
+          const Spacer(
+            flex: 2,
+          ),
+          Flexible(
+            child: IconButton(
+              icon: const Icon(Icons.open_in_full),
+              color: Colors.white,
+              iconSize: 24,
+              onPressed: () {
+                PIPView.of(context)?.stopFloating();
+              },
+            ),
+          ),
+          Flexible(
+            child: IconButton(
+              icon: const Icon(Icons.close),
+              color: Colors.white,
+              iconSize: 24,
+              onPressed: _closePIPView,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget buildMediumFooter() {
+  Widget buildMediumFooter(Size videoImageSize) {
     return Positioned(
-      bottom: 10,
-      left: 0,
-      right: 0,
-      child: Container(
-        color: Colors.green.withOpacity(0.5),
-        height: 50,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.keyboard_double_arrow_left,
-              ),
-              color: Colors.white,
-              iconSize: 80,
+      bottom: videoImageSize.height * 0.13,
+      left: videoImageSize.width * 0.12 - 10,
+      right: videoImageSize.width * 0.12 - 10,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.keyboard_double_arrow_left,
             ),
-            IconButton(
-              onPressed: () => _controller.play(),
-              icon: const Icon(
-                Icons.play_arrow_rounded,
-              ),
-              color: Colors.white,
-              iconSize: 82,
+            color: Colors.white,
+            iconSize: 24,
+          ),
+          ValueListenableBuilder(
+              valueListenable: _controller,
+              builder: (context, value, child) {
+                if (value.position == value.duration) {
+                  _startInactiveTimer();
+                }
+
+                return IconButton(
+                  onPressed: _playPauseVideo,
+                  icon: Icon(
+                    (value.position == value.duration)
+                        ? Icons.replay_rounded
+                        : value.isPlaying
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                  ),
+                  color: Colors.white,
+                  iconSize: 30,
+                );
+              }),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.keyboard_double_arrow_right,
             ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.keyboard_double_arrow_right,
-              ),
-              color: Colors.white,
-              iconSize: 80,
-            ),
-          ],
-        ),
+            color: Colors.white,
+            iconSize: 24,
+          ),
+        ],
       ),
     );
+  }
+
+  Widget buildMinizedHeader(Size videoImageSize) {
+    return _isUserActive
+        ? Positioned(
+            top: 10,
+            right: 0,
+            left: 0,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: IconButton(
+                    icon: const Icon(Icons.settings),
+                    color: Colors.white,
+                    iconSize: 70,
+                    onPressed: () {},
+                  ),
+                ),
+                Flexible(
+                  child: IconButton(
+                    icon: const Icon(Icons.open_in_full),
+                    color: Colors.white,
+                    iconSize: 70,
+                    onPressed: () {
+                      PIPView.of(context)?.stopFloating();
+                    },
+                  ),
+                ),
+                Flexible(
+                  child: IconButton(
+                    icon: const Icon(Icons.close),
+                    color: Colors.white,
+                    iconSize: 70,
+                    onPressed: () {
+                      FloatingUtil.close();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          )
+        : const Positioned(
+            top: 0,
+            right: 0,
+            left: 0,
+            child: SizedBox.shrink(),
+          );
   }
 
   @override
@@ -470,6 +535,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
       floatingHeight: videoImageSize.height * 0.12,
       floatingWidth: videoImageSize.width * 0.12,
       initialCorner: PIPViewCorner.bottomRight,
+      isInteractive: _isUserActive,
       pipViewState: pipViewSize,
       onInteractionChange: (isInteractive) {
         setState(() {
@@ -488,10 +554,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
           pipViewSize = size;
         });
       },
-      onClosePIPView: () {
-        print("Run this");
-        FloatingUtil.close();
-      },
+      onClosePIPView: _closePIPView,
       builder: (pipContext, isFloating) {
         print("PIPViewSize: $pipViewSize");
         return Scaffold(
@@ -502,29 +565,16 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                 Positioned.fill(
                   child: buildVideoPlayView(),
                 ),
-                // if (pipViewSize != PIPViewSize.small)
-                //   buildHeader(pipContext)
-                // else
-                //   buildMediumHeader(),
-                // if (pipViewSize != PIPViewSize.small)
-                //   buildFooter()
-                // else
-                //   buildMediumFooter(),
                 if (pipViewSize == PIPViewSize.full || pipViewSize == null) ...[
                   buildHeader(pipContext),
                   buildFooter(),
                 ],
                 if (pipViewSize == PIPViewSize.medium) ...[
-                  buildMediumHeader(),
-                  buildMediumFooter(),
+                  buildMediumHeader(videoImageSize),
+                  buildMediumFooter(videoImageSize),
                 ],
                 if (pipViewSize == PIPViewSize.small) ...[
-                  const Positioned(
-                    top: 0,
-                    right: 0,
-                    left: 0,
-                    child: SizedBox.shrink(),
-                  ),
+                  buildMinizedHeader(videoImageSize),
                   const Positioned(
                     bottom: 0,
                     right: 0,
