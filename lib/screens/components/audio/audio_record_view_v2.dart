@@ -119,8 +119,6 @@ class _AudioRecordViewV2State extends State<AudioRecordViewV2> {
                     onTap: () async {
                       var result = await widget.recorderController.stop();
                       if (result != null && context.mounted) {
-                        print("Record file path: $result");
-                        print("Record file size: ${File(result).lengthSync()}");
                         Navigator.pop(context, File(result));
                       }
                     },
