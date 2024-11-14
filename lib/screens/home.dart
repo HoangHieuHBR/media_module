@@ -266,11 +266,10 @@ class _HomePageState extends State<HomePage> {
               child: FutureBuilder(
                   future: controller.initialize(),
                   builder: (context, snapshot) {
-                    String videoDuration = '0:00';
+                    String videoDuration =
+                        _videoDuration(controller.value.duration);
 
                     if (snapshot.connectionState == ConnectionState.done) {
-                      videoDuration = _videoDuration(controller.value.duration);
-
                       return Container(
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(

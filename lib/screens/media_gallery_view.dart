@@ -46,7 +46,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    print("Run into this");
     _resetTimer();
   }
 
@@ -58,7 +57,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   }
 
   void _onFloatingStateChanged() {
-    print("Run state changed");
     setState(() {
       if (FloatingUtil.state != FloatingState.closed) {
         if (!_isControllerInitialized) {
@@ -81,7 +79,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
   }
 
   void _playPauseVideo() {
-    print("Run play");
     setState(() {
       _isUserActive = true;
       _showVideoControlView = true;
@@ -401,45 +398,32 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
     );
   }
 
-  Widget buildMediumHeader(Size videoImageSize) {
+  Widget buildMediumHeader(BuildContext pipViewContext, Size videoImageSize) {
     return Positioned(
       top: videoImageSize.height * 0.12 - 10,
       left: videoImageSize.width * 0.12 - 10,
       right: videoImageSize.width * 0.12 - 10,
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Flexible(
-            child: IconButton(
-              icon: const Icon(Icons.settings),
-              color: Colors.white,
-              iconSize: 24,
-              onPressed: () {
-                print("Run settings");
-              },
-            ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            color: Colors.white,
+            iconSize: 24,
+            onPressed: () {},
           ),
-          const Spacer(
-            flex: 2,
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.open_in_full),
+            color: Colors.white,
+            onPressed: () {
+              PIPView.of(pipViewContext)?.stopFloating();
+              _openFullView();
+            },
           ),
-          Flexible(
-            child: IconButton(
-              icon: const Icon(Icons.open_in_full),
-              color: Colors.white,
-              iconSize: 24,
-              onPressed: _openFullView,
-            ),
-          ),
-          Flexible(
-            child: IconButton(
-              icon: const Icon(Icons.close),
-              color: Colors.white,
-              iconSize: 24,
-              onPressed: () {
-                print("Run close");
-                _closePIPView();
-              },
-            ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            color: Colors.white,
+            onPressed: _closePIPView,
           ),
         ],
       ),
@@ -461,7 +445,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
               Icons.keyboard_double_arrow_left,
             ),
             color: Colors.white,
-            iconSize: 24,
           ),
           ValueListenableBuilder(
             valueListenable: _controller,
@@ -490,28 +473,25 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
               Icons.keyboard_double_arrow_right,
             ),
             color: Colors.white,
-            iconSize: 24,
           ),
         ],
       ),
     );
   }
 
-  Widget buildMinizedHeader(Size videoImageSize) {
+  Widget buildMinizedHeader(BuildContext pipViewContext, Size videoImageSize) {
     return _isUserActive
         ? Positioned(
-            top: 10,
-            right: 0,
-            left: 0,
+            top: videoImageSize.height * 0.13,
+            left: videoImageSize.width * 0.135,
+            right: videoImageSize.width * 0.135,
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
                   child: IconButton(
                     icon: const Icon(Icons.settings),
                     color: Colors.white,
-                    iconSize: 70,
                     onPressed: () {},
                   ),
                 ),
@@ -519,9 +499,9 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                   child: IconButton(
                     icon: const Icon(Icons.open_in_full),
                     color: Colors.white,
-                    iconSize: 70,
                     onPressed: () {
-                      PIPView.of(context)?.stopFloating();
+                      PIPView.of(pipViewContext)?.stopFloating();
+                      _openFullView();
                     },
                   ),
                 ),
@@ -529,10 +509,7 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                   child: IconButton(
                     icon: const Icon(Icons.close),
                     color: Colors.white,
-                    iconSize: 70,
-                    onPressed: () {
-                      FloatingUtil.close();
-                    },
+                    onPressed: _closePIPView,
                   ),
                 ),
               ],
@@ -577,7 +554,6 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
       },
       onDragToClose: _closePIPView,
       builder: (pipContext, isFloating) {
-        print("PIPViewSize: $pipViewSize");
         return Scaffold(
           resizeToAvoidBottomInset: !isFloating,
           body: SafeArea(
@@ -591,11 +567,11 @@ class _MediaGalleryViewState extends State<MediaGalleryView> {
                   buildFooter(),
                 ],
                 if (pipViewSize == PIPViewSize.medium) ...[
-                  buildMediumHeader(videoImageSize),
+                  buildMediumHeader(pipContext, videoImageSize),
                   buildMediumFooter(videoImageSize),
                 ],
                 if (pipViewSize == PIPViewSize.small) ...[
-                  buildMinizedHeader(videoImageSize),
+                  buildMinizedHeader(pipContext, videoImageSize),
                   const Positioned(
                     bottom: 0,
                     right: 0,
